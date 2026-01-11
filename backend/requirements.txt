@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+requests
+bs4
+pandas
+firebase-admin
+geopy
