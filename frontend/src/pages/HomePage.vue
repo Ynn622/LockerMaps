@@ -19,6 +19,9 @@
         
         <!-- 載入畫面 -->
         <Loading ref="loadingRef" />
+        
+        <!-- Toast 提示 -->
+        <Toast ref="toastRef" />
     </div>
 </template>
 
@@ -28,6 +31,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import DetailPanel from './components/DetailPanel.vue';
 import Loading from './components/Loading.vue';
+import Toast from './components/Toast.vue';
 import { getLockerData, type StationData } from '../utilities/lockerApi';
 import { logger } from '../utilities/logger';
 import { getMarkerColor } from '../utilities/colorUtils';
@@ -35,6 +39,7 @@ import { getMarkerColor } from '../utilities/colorUtils';
 const mapContainer = ref<HTMLDivElement | null>(null);
 const detailPanel = ref<InstanceType<typeof DetailPanel> | null>(null);
 const loadingRef = ref<InstanceType<typeof Loading> | null>(null);
+const toastRef = ref<InstanceType<typeof Toast> | null>(null);
 let map: mapboxgl.Map | null = null;
 const markers: any = ref([]);
 const lockerStations = ref<StationData[]>([]);
@@ -119,6 +124,45 @@ const initMap = () => {
     // 添加全螢幕控制器
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     
+    // 添加定位控制器
+    const geolocateControl = new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true // 使用高精度定位
+        },
+        trackUserLocation: true, // 持續追蹤使用者位置
+        showUserHeading: true, // 顯示使用者方向
+        showUserLocation: true, // 顯示使用者位置
+        showAccuracyCircle: true // 顯示精度範圍圓圈
+    });
+    map.addControl(geolocateControl, 'top-right');
+    
+    // 監聽定位錯誤事件
+    geolocateControl.on('error', (error) => {
+        logger.error('定位錯誤:', error.message);
+        let toastMessage = '';
+        
+        if (error.code === 1) {
+            logger.warn('使用者拒絕了定位請求');
+            toastMessage = '請開啟定位權限以使用定位功能';
+        } else if (error.code === 2) {
+            logger.warn('無法取得位置資訊');
+            toastMessage = '無法取得您的位置資訊，請檢查裝置定位設定';
+        } else if (error.code === 3) {
+            logger.warn('定位請求逾時');
+            toastMessage = '定位請求逾時，請稍後再試';
+        } else {
+            toastMessage = '定位功能無法使用，請確認已開啟定位權限';
+        }
+        
+        // 顯示 Toast 提示
+        toastRef.value?.show(toastMessage, 'warning', 10000);
+    });
+    
+    // 監聽定位成功事件
+    geolocateControl.on('geolocate', (position) => {
+        logger.info('定位成功:', position.coords.latitude, position.coords.longitude);
+    });
+    
     // 添加比例尺
     map.addControl(new mapboxgl.ScaleControl({
         maxWidth: 100,
@@ -148,6 +192,22 @@ const initMap = () => {
         
         // 載入置物櫃資料
         loadLockerData();
+        
+        // 自動觸發定位（在地圖載入後）
+        // 檢查是否支援地理定位
+        if ('geolocation' in navigator) {
+            setTimeout(() => {
+                try {
+                    geolocateControl.trigger();
+                } catch (error) {
+                    logger.warn('自動定位失敗:', error);
+                    toastRef.value?.show('定位功能無法使用，請確認已開啟定位權限', 'warning', 5000);
+                }
+            }, 1000);
+        } else {
+            logger.warn('此瀏覽器不支援地理定位功能');
+            toastRef.value?.show('您的瀏覽器不支援地理定位功能', 'error', 5000);
+        }
     });
 };
 
