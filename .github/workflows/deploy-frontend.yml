@@ -31,10 +31,32 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
+      
+      # 快取 node_modules 以加速後續構建
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: cache-node-modules
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
           
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         working-directory: ./frontend
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
+      
+      # 快取 Vite 構建緩存
+      - name: Cache Vite build
+        uses: actions/cache@v4
+        with:
+          path: |
+            frontend/.vite
+            frontend/node_modules/.vite
+          key: ${{ runner.os }}-vite-${{ hashFiles('frontend/src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-
         
       - name: Build
         working-directory: ./frontend
