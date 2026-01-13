@@ -16,7 +16,7 @@ type ToastType = 'success' | 'error' | 'warning' | 'info';
 const visible = ref(false);
 const message = ref('');
 const type = ref<ToastType>('info');
-let timer: NodeJS.Timeout | null = null;
+let timer: number | null = null;
 
 const typeClass = computed(() => {
     const classes = {
