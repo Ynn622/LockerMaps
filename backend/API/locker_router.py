@@ -39,6 +39,9 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
             for station in data:
                 name = station["station"]
                 stationData = StationGPSManager.get_station_GPS_dict()
+                if name == "台北車站" and station["type"] == "TRA":
+                    station.update({ "lat": 25.047784479915663, "lng": 121.51642612598873 })
+                    continue
                 if name in stationData:
                     station.update({
                         "lat": stationData[name]["lat"],
