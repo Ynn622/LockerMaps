@@ -135,9 +135,9 @@ class StationGPSManager:
                     doc_ref.set({
                         'name': station_name,
                         'data': gps_data
-                    })
+                    }, merge=True)
                     self._cache[station_name] = gps_data
-                    Log(f"已存入 Firebase＆快取：「{station_name} - {gps_data}」", color=Color.GREEN)
+                    Log(f"已存入 Firebase：「{station_name} - {gps_data}」", color=Color.GREEN)
                 except Exception as e:
                     Log(f"存入 Firebase 失敗：{e}", color=Color.RED)
         except Exception as e:
