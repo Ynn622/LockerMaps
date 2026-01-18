@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col w-full h-[100dvh]">
-        <Nav />
+        <Nav flow="absolute"/>
 
         <!-- Mapbox 地圖容器 -->
         <div ref="mapContainer" class="flex-1 w-full h-full relative">

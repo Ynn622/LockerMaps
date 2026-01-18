@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col w-full min-h-screen bg-gray-50">
-        <Nav />
+        <Nav flow="sticky"/>
         
         <div class="flex-1 w-full max-w-4xl mx-auto px-4 pt-8 md:pt-12">
             <!-- 標題區塊 -->
