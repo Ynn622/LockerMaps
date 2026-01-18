@@ -4,6 +4,12 @@
 
         <!-- Mapbox 地圖容器 -->
         <div ref="mapContainer" class="flex-1 w-full h-full relative">
+            <!-- 搜尋列 -->
+            <SearchBar 
+                :stations="lockerStations" 
+                @select="handleStationSelect"
+            />
+            
             <!-- 重新載入按鈕 -->
             <button
                 @click="reloadLockerData"
@@ -30,12 +36,15 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import DetailPanel from './components/DetailPanel.vue';
-import Loading from './components/Loading.vue';
-import Toast from './components/Toast.vue';
 import { getLockerData, type StationData } from '../utilities/lockerApi';
 import { logger } from '../utilities/logger';
 import { getMarkerColor } from '../utilities/colorUtils';
+import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
+
+import DetailPanel from './components/DetailPanel.vue';
+import Loading from './components/Loading.vue';
+import Toast from './components/Toast.vue';
+import SearchBar from './components/SearchBar.vue';
 import Nav from './components/Nav.vue';
 
 const mapContainer = ref<HTMLDivElement | null>(null);
@@ -46,6 +55,10 @@ let map: mapboxgl.Map | null = null;
 const markers: any = ref([]);
 const lockerStations = ref<StationData[]>([]);
 const isReloading = ref(false);
+
+// 響應式斷點偵測
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smaller('md'); // < md
 
 // Mapbox Access Token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
@@ -138,17 +151,37 @@ const reloadLockerData = async () => {
     }
 };
 
+// 處理站點選擇（從搜尋列）
+const handleStationSelect = (station: StationData) => {
+    if (!map || !station.lat || !station.lng) return;
+    
+    logger.info('選擇站點:', station.station);
+    
+    // 飛到選擇的站點位置
+    map.flyTo({
+        center: [station.lng, station.lat-(isMobile.value ? 0.005 : 0)],
+        zoom: 14,
+        duration: 1500,
+        essential: true
+    });
+    
+    // 延遲一下再顯示詳細資訊，讓地圖飛行動畫更流暢
+    setTimeout(() => {
+        detailPanel.value?.show(station);
+    }, 800);
+};
+
 // 初始化地圖
 const initMap = () => {
     if (!mapContainer.value) return;
     
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    
+
     map = new mapboxgl.Map({
         container: mapContainer.value,
         style: 'mapbox://styles/mapbox/streets-v12', // 淺色街道地圖
         center: [120.9605, 23.6978], // 台灣中心座標
-        zoom: 7.5,
+        zoom: isMobile.value ? 6.5 : 7,
         pitch: 0, // 平面視角
         bearing: 0,
         interactive: true,

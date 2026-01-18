@@ -18,7 +18,7 @@
                         <span class="text-xs bg-black/30 px-2 py-0.5 rounded">{{ getTypeDisplayName(stationData.type) }}</span>
                         <span v-for="tag in stationData.tag" 
                               :key="tag"
-                              :class="['text-xs px-2 py-0.5 rounded', getTagColorClass(tag)]">
+                              :class="['text-xs px-2 py-0.5 rounded text-white', getTagColorClass(tag)]">
                             {{ tag }}
                         </span>
                     </div>
@@ -321,7 +321,7 @@ defineExpose({
     left: 0;
     right: 0;
     bottom: 0;
-    height: 50vh;
+    height: 45vh;
     border-radius: 1rem 1rem 0 0;
     width: 100dvw;
     border-right: 1px solid #e5e7eb;

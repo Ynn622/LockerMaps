@@ -46,13 +46,15 @@ export const getTypeDisplayName = (type: string): string => {
  * @returns Tailwind CSS 類名字符串
  */
 export const getTagColorClass = (tag: string): string => {
-    if (tag.startsWith('BR')) return 'bg-amber-600 text-white'; // 棕色底 - 文湖線
-    if (tag.startsWith('BL')) return 'bg-blue-600 text-white'; // 藍色底 - 板南線
-    if (tag.startsWith('R')) return 'bg-red-600 text-white'; // 紅色底 - 淡水信義線
-    if (tag.startsWith('O')) return 'bg-orange-500 text-white'; // 橘色底 - 中和新蘆線
-    if (tag.startsWith('G')) return 'bg-green-700 text-white'; // 綠色底 - 松山新店線
-    if (tag.startsWith('Y')) return 'bg-yellow-400 text-white'; // 黃色底 - 環狀線
-    if (tag === '桃園捷運') return 'bg-purple-500 text-white'; // 紫色 - 桃園捷運
-    if (tag === '台中捷運') return 'bg-green-600 text-white'; // 綠色 - 台中捷運
-    return 'bg-white/20 text-white'; // 預設白色半透明
+    if (tag.startsWith('BR')) return 'bg-amber-600'; // 棕色底 - 文湖線
+    if (tag.startsWith('BL')) return 'bg-blue-600'; // 藍色底 - 板南線
+    if (tag.startsWith('R')) return 'bg-red-600'; // 紅色底 - 淡水信義線
+    if (tag.startsWith('O')) return 'bg-orange-500'; // 橘色底 - 中和新蘆線
+    if (tag.startsWith('G')) return 'bg-green-700'; // 綠色底 - 松山新店線
+    if (tag.startsWith('Y')) return 'bg-yellow-400'; // 黃色底 - 環狀線
+    if (tag === '桃園捷運') return 'bg-purple-500'; // 紫色 - 桃園捷運
+    if (tag === '台中捷運') return 'bg-green-600'; // 綠色 - 台中捷運
+    if (tag === '台灣高鐵') return 'bg-orange-400'; // 橘色 - 台灣高鐵
+    if (tag === '誠品生活') return 'bg-red-700'; // 棕色 - 誠品生活
+    return 'bg-gray-400';
 };

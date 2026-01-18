@@ -1,7 +1,7 @@
 <template>
     <Transition name="toast">
         <div v-if="visible" 
-             :class="['fixed z-50 top-20 left-1/2 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 break-words max-w-[80dvw] toast-container', typeClass]">
+             :class="['fixed z-3000 top-20 left-1/2 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 break-words max-w-[80dvw] toast-container', typeClass]">
             <i :class="iconClass"></i>
             <span class="text-sm font-medium">{{ message }}</span>
         </div>
