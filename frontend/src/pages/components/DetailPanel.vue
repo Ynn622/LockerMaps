@@ -321,7 +321,7 @@ defineExpose({
     left: 0;
     right: 0;
     bottom: 0;
-    max-height: 60vh;
+    height: 50vh;
     border-radius: 1rem 1rem 0 0;
     width: 100dvw;
     border-right: 1px solid #e5e7eb;

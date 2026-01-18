@@ -1,15 +1,6 @@
 <template>
     <div class="flex flex-col w-full h-[100dvh]">
-        <!-- 頂部標題列 -->
-        <div class="bg-gray-100 shadow-md">
-            <div class="px-4 py-2 flex items-center gap-3">
-                <i class="fa-solid fa-map-location-dot text-3xl"></i>
-                <span class="flex flex-col">
-                    <span class="text-xl text-gray-800 font-bold">LockerMaps</span>
-                    <p class="text-xs text-gray-600">台灣置物櫃速查</p>
-                </span>
-            </div>
-        </div>
+        <Nav />
 
         <!-- Mapbox 地圖容器 -->
         <div ref="mapContainer" class="flex-1 w-full h-full"></div>
@@ -35,6 +26,7 @@ import Toast from './components/Toast.vue';
 import { getLockerData, type StationData } from '../utilities/lockerApi';
 import { logger } from '../utilities/logger';
 import { getMarkerColor } from '../utilities/colorUtils';
+import Nav from './components/Nav.vue';
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 const detailPanel = ref<InstanceType<typeof DetailPanel> | null>(null);
@@ -138,20 +130,24 @@ const initMap = () => {
     
     // 監聽定位錯誤事件
     geolocateControl.on('error', (error) => {
-        logger.error('定位錯誤:', error.message);
+        logger.error('定位錯誤:', error);
         let toastMessage = '';
         
         if (error.code === 1) {
+            // PERMISSION_DENIED
             logger.warn('使用者拒絕了定位請求');
             toastMessage = '請開啟定位權限以使用定位功能';
         } else if (error.code === 2) {
-            logger.warn('無法取得位置資訊');
-            toastMessage = '無法取得您的位置資訊，請檢查裝置定位設定';
+            // POSITION_UNAVAILABLE (kCLErrorLocationUnknown)
+            logger.warn('無法取得位置資訊 - GPS訊號不足或定位服務初始化中');
+            toastMessage = '定位中，請稍候或移至空曠處以獲得更好的訊號';
         } else if (error.code === 3) {
+            // TIMEOUT
             logger.warn('定位請求逾時');
             toastMessage = '定位請求逾時，請稍後再試';
         } else {
-            toastMessage = '定位功能無法使用，請確認已開啟定位權限';
+            logger.warn('未知的定位錯誤:', error);
+            toastMessage = '定位功能暫時無法使用，請稍後再試';
         }
         
         // 顯示 Toast 提示
