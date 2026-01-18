@@ -5,7 +5,7 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.openapi.utils import get_openapi
 import secrets
 
-from API import locker_router
+from API import locker_router, feedback_router
 
 from util.env import Env
 
@@ -53,6 +53,7 @@ app.add_middleware(
 )
 # 引入路由
 app.include_router(locker_router.router)
+app.include_router(feedback_router.router)
 
 # 受保護的 OpenAPI schema
 @app.get("/openapi.json", include_in_schema=False)

@@ -11,7 +11,7 @@
 
             <!-- 網頁介紹 -->
             <div class="flex flex-col gap-4 md:gap-6">
-                <SectionCard title="網頁介紹" icon-class="fa-solid fa-circle-info text-blue-500">
+                <SectionCard class="scroll-card" title="網頁介紹" icon-class="fa-solid fa-circle-info text-blue-500">
                     <div class="space-y-3">
                         <p class="indent-7">
                             <strong>LockerMaps</strong> 是一個專為台灣使用者設計的置物櫃查詢平台，
@@ -51,7 +51,7 @@
                 </SectionCard>
 
                 <!-- 資料來源 -->
-                <SectionCard title="資料來源" icon-class="fa-solid fa-book text-green-500">
+                <SectionCard class="scroll-card" title="資料來源" icon-class="fa-solid fa-book text-green-500">
                     <div class="space-y-4">
                         <p class="indent-7">
                             本平台的置物櫃資料來自以下開放資料來源，確保資訊的準確性與即時性：
@@ -86,7 +86,7 @@
                 </SectionCard>
 
                 <!-- 意見回饋 -->
-                <SectionCard title="意見回饋" icon-class="fa-solid fa-comments text-orange-500">
+                <SectionCard class="scroll-card" title="意見回饋" icon-class="fa-solid fa-comments text-orange-500">
                     <div class="mb-6">
                         <p class="indent-7">
                             您的意見對我們非常重要！如果您在使用過程中有任何建議、發現錯誤資訊，
@@ -120,7 +120,7 @@
                             <input 
                                 v-model="feedbackForm.name" 
                                 type="text" 
-                                placeholder="請輸入您的姓名"
+                                placeholder="請輸入您的暱稱"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 required
                             />
@@ -134,8 +134,13 @@
                                 v-model="feedbackForm.email" 
                                 type="email" 
                                 placeholder="請輸入您的 Email"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                @input="handleEmailInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                :class="emailError ? 'border-red-500' : 'border-gray-300'"
                             />
+                            <p v-if="emailError" class="text-red-500 text-sm mt-1">
+                                <i class="fa-solid fa-circle-exclamation mr-1"></i>{{ emailError }}
+                            </p>
                         </div>
 
                         <div>
@@ -145,6 +150,7 @@
                             <textarea 
                                 v-model="feedbackForm.content" 
                                 rows="6" 
+                                minlength="5"
                                 placeholder="請詳細描述您的意見或建議..."
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                 required
@@ -156,6 +162,7 @@
                                 type="submit" 
                                 :disabled="isSubmitting"
                                 class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                required
                             >
                                 <i class="fa-solid fa-paper-plane mr-2"></i>
                                 {{ isSubmitting ? '送出中...' : '送出回饋' }}
@@ -184,14 +191,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Nav from './components/Nav.vue';
 import Toast from './components/Toast.vue';
 import SectionCard from './components/SectionCard.vue';
 import { logger } from '../utilities/logger';
+import { API_BASE_URL } from '../utilities/apiConfig';
+
+// 註冊 GSAP 插件
+gsap.registerPlugin(ScrollTrigger);
 
 const toastRef = ref<InstanceType<typeof Toast> | null>(null);
 const isSubmitting = ref(false);
+const emailError = ref('');
 
 // 回饋表單資料
 const feedbackForm = reactive({
@@ -201,24 +215,49 @@ const feedbackForm = reactive({
     content: ''
 });
 
+// Email 格式驗證
+const validateEmail = (email: string): boolean => {
+    if (!email) return true; // 如果沒有輸入，不驗證
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+// 監聽 email 變化並驗證
+const handleEmailInput = () => {
+    if (feedbackForm.email && !validateEmail(feedbackForm.email)) {
+        emailError.value = 'Email 格式不正確';
+    } else {
+        emailError.value = '';
+    }
+};
+
 // 送出回饋
 const submitFeedback = async () => {
     try {
+        // 驗證 email 格式
+        if (feedbackForm.email && !validateEmail(feedbackForm.email)) {
+            toastRef.value?.show('請輸入正確的 Email 格式', 'error', 3000);
+            return;
+        }
+        
         isSubmitting.value = true;
         logger.func.start('submitFeedback', [feedbackForm]);
         
-        // TODO: 串接 API
-        // const response = await fetch('/api/feedback', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(feedbackForm)
-        // });
+        // 呼叫後端 API
+        const response = await fetch(`${API_BASE_URL}/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(feedbackForm)
+        });
         
-        // 模擬 API 呼叫
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || '送出失敗');
+        }
         
-        logger.func.success('submitFeedback', []);
-        logger.info('回饋已送出:', feedbackForm);
+        const result = await response.json();
+        
+        logger.func.success('submitFeedback', [result]);
         
         toastRef.value?.show('感謝您的回饋！我們會盡快處理。', 'success', 5000);
         
@@ -239,12 +278,55 @@ const resetForm = () => {
     feedbackForm.name = '';
     feedbackForm.email = '';
     feedbackForm.content = '';
+    emailError.value = '';
 };
+
+// GSAP ScrollTrigger 動畫
+onMounted(() => {
+    // 為每個卡片設定滑入動畫
+    const cards = document.querySelectorAll('.scroll-card');
+    
+    cards.forEach((card) => {
+        gsap.fromTo(card,
+            {
+                opacity: 0,
+                x: -100,
+            },
+            {
+                opacity: 1,
+                x: 0,
+                y: 0,
+                duration: 0.8,
+                ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 85%',
+                    end: 'top 60%',
+                    toggleActions: 'play none none none',
+                    // markers: true // 開發時可以打開看觸發點
+                }
+            }
+        );
+    });
+
+    // 標題淡入效果
+    gsap.from('.text-center', {
+        opacity: 0,
+        y: -50,
+        duration: 1,
+        ease: 'power2.out'
+    });
+});
 </script>
 
 <style scoped>
 /* 平滑滾動 */
 html {
     scroll-behavior: smooth;
+}
+
+/* 卡片初始狀態 - 確保在 GSAP 動畫載入前不顯示 */
+.scroll-card {
+    opacity: 0;
 }
 </style>
