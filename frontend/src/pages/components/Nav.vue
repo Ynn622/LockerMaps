@@ -19,7 +19,8 @@
         </div>
     </div>
     <!-- 手機版選單下拉 -->
-    <div id="mobileMenu" class="flex flex-col md:hidden absolute top-16 z-40 px-4 py-3 gap-5 bg-white shadow-md w-full text-sm font-bold opacity-0 overflow-hidden items-start">
+    <div id="mobileMenu" class="flex flex-col md:hidden absolute top-16 px-4 py-3 gap-5 bg-white shadow-md w-full text-sm font-bold opacity-0 overflow-hidden items-start"
+        :class="[isMenuOpen ? 'z-40' : 'z-0']">
         <button @click="shared()" class="text-gray-700 hover:text-gray-900">推薦朋友</button>
         <router-link to="/about" class="text-gray-700 hover:text-gray-900">關於我們</router-link>
     </div>
@@ -80,7 +81,7 @@ const showMobileMenu = () => {
 const hideMobileMenu = () => {
     const menu = document.getElementById('mobileMenu');
     gsap.to(menu, {
-        height: -10,
+        height: 0,
         opacity: 0,
         duration: 0.3,
         ease: 'power2.in'
