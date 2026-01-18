@@ -1,5 +1,5 @@
 <template>
-    <div ref="searchBarRef" class="absolute top-2.5 right-15 z-10 w-[80vw] md:w-[350px] z-60">
+    <div ref="searchBarRef" class="absolute top-2.5 right-15 z-10 w-[80vw] md:w-[350px] z-30">
         <div class="relative items-center">
             <input
                 v-model="searchQuery"

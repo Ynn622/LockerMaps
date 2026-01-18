@@ -28,6 +28,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import gsap from 'gsap';
+import { useToast } from '@/composables/useToast';
+
+const toast = useToast();
 
 const shared = () => {
     const shareData = {
@@ -39,15 +42,20 @@ const shared = () => {
     if (navigator.share) {
         navigator.share(shareData)
             .then(() => {
-                console.log('成功分享');
+                toast?.show('感謝您的分享！', 'success');
             })
             .catch((error) => {
+                toast?.show('分享失敗，請稍後再試。', 'error');
                 console.error('分享失敗:', error);
             });
     } else {
         // 複製連結到剪貼簿
-        navigator.clipboard.writeText(shareData.url);
-        console.log('連結已複製到剪貼簿');
+        try {
+            navigator.clipboard.writeText(shareData.url);
+            toast?.show('已複製連結到剪貼簿', 'success');
+        } catch (error) {
+            toast?.show('複製連結失敗', 'error');
+        }
     }
 };
 
@@ -72,7 +80,7 @@ const showMobileMenu = () => {
 const hideMobileMenu = () => {
     const menu = document.getElementById('mobileMenu');
     gsap.to(menu, {
-        height: 0,
+        height: -10,
         opacity: 0,
         duration: 0.3,
         ease: 'power2.in'

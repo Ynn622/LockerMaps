@@ -26,9 +26,6 @@
         
         <!-- 載入畫面 -->
         <Loading ref="loadingRef" />
-        
-        <!-- Toast 提示 -->
-        <Toast ref="toastRef" />
     </div>
 </template>
 
@@ -43,14 +40,14 @@ import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 
 import DetailPanel from './components/DetailPanel.vue';
 import Loading from './components/Loading.vue';
-import Toast from './components/Toast.vue';
 import SearchBar from './components/SearchBar.vue';
 import Nav from './components/Nav.vue';
+import { useToast } from '@/composables/useToast';
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 const detailPanel = ref<InstanceType<typeof DetailPanel> | null>(null);
 const loadingRef = ref<InstanceType<typeof Loading> | null>(null);
-const toastRef = ref<InstanceType<typeof Toast> | null>(null);
+const toast = useToast();
 let map: mapboxgl.Map | null = null;
 const markers: any = ref([]);
 const lockerStations = ref<StationData[]>([]);
@@ -140,11 +137,11 @@ const reloadLockerData = async () => {
         logger.info('重新載入完成，共', data.length, '個站點');
         
         // 顯示成功提示
-        toastRef.value?.show('資料已更新！', 'success', 3000);
+        toast?.show('資料已更新！', 'success', 3000);
     } catch (error) {
         logger.func.error('reloadLockerData', []);
         logger.error('重新載入失敗:', error);
-        toastRef.value?.show('重新載入失敗，請稍後再試', 'error', 5000);
+        toast?.show('重新載入失敗，請稍後再試', 'error', 5000);
     } finally {
         isReloading.value = false;
         loadingRef.value?.hide();
@@ -228,7 +225,7 @@ const initMap = () => {
         }
         
         // 顯示 Toast 提示
-        toastRef.value?.show(toastMessage, 'warning', 10000);
+        toast?.show(toastMessage, 'warning', 10000);
     });
     
     // 監聽定位成功事件
@@ -274,12 +271,12 @@ const initMap = () => {
                     geolocateControl.trigger();
                 } catch (error) {
                     logger.warn('自動定位失敗:', error);
-                    toastRef.value?.show('定位功能無法使用，請確認已開啟定位權限', 'warning', 5000);
+                    toast?.show('定位功能無法使用，請確認已開啟定位權限', 'warning', 5000);
                 }
             }, 1000);
         } else {
             logger.warn('此瀏覽器不支援地理定位功能');
-            toastRef.value?.show('您的瀏覽器不支援地理定位功能', 'error', 5000);
+            toast?.show('您的瀏覽器不支援地理定位功能', 'error', 5000);
         }
     });
 };
