@@ -33,6 +33,7 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
                         "MRT": getMRTLockerData(),
                         "TRA": getTRALockerData(),
                         "OWL": getOWLockerData(),
+                        "Arena": getArenaLockerData()
                     }
                     last_fetch_time = time.time()  # 使用最新時間
 
