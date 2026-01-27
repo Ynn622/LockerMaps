@@ -3,7 +3,7 @@
          ref="panelRef"
          :class="[
              'detail-panel',
-             'bg-white shadow-2xl overflow-hidden flex flex-col',
+             'bg-white dark:bg-gray-800 shadow-2xl overflow-hidden flex flex-col',
              isMobile ? 'mobile' : 'desktop'
          ]">
             
@@ -35,9 +35,9 @@
                 <div class="mb-2 space-y-2 flex items-center justify-between flex-wrap md:flex-nowrap">
                     <!-- 排序選擇 -->
                     <div class="flex gap-2 items-center mb-0">
-                        <i class="fa-solid fa-sort text-gray-600 text-sm"></i>
+                        <i class="fa-solid fa-sort text-gray-600 dark:text-gray-400 text-sm"></i>
                         <select v-model="sortBy" 
-                                class="flex-1 text-sm border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                class="flex-1 text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-200">
                             <option value="id-asc">櫃號 ↑</option>
                             <option value="id-desc">櫃號 ↓</option>
                             <option value="empty-asc">空櫃數 ↑</option>
@@ -49,27 +49,27 @@
                     
                     <!-- 尺寸篩選 -->
                     <div class="flex gap-2 items-center flex-wrap">
-                        <i class="fa-solid fa-filter text-gray-600 text-sm"></i>
+                        <i class="fa-solid fa-filter text-gray-600 dark:text-gray-400 text-sm"></i>
                         <button @click="toggleSize('全部')"
-                                :class="['text-xs px-2.5 py-1 rounded font-medium transition', selectedSizes.has('全部') ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']">
+                                :class="['text-xs px-2.5 py-1 rounded font-medium transition', selectedSizes.has('全部') ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600']">
                             全部
                         </button>
                         <button v-for="size in availableSizes" 
                                 :key="size"
                                 @click="toggleSize(size)"
-                                :class="['text-xs px-2.5 py-1 rounded font-medium transition', selectedSizes.has(size) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']">
+                                :class="['text-xs px-2.5 py-1 rounded font-medium transition', selectedSizes.has(size) ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600']">
                             {{ size }}
                         </button>
                     </div>
                 </div>
 
                 <!-- 總覽資訊 -->
-                <div class="mb-2 px-3.5 py-2.5 bg-blue-50 rounded-lg">
+                <div class="mb-2 px-3.5 py-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm md:text-base text-gray-600">空櫃 / 總櫃數</span>
+                        <span class="text-sm md:text-base text-gray-600 dark:text-gray-400">空櫃 / 總櫃數</span>
                         <div>
-                            <span class="text-xl md:text-2xl font-bold text-blue-600">{{ totalEmpty }}</span> / 
-                            <span class="text-base md:text-lg font-semibold text-gray-700">{{ totalCount }}</span>
+                            <span class="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{{ totalEmpty }}</span> / 
+                            <span class="text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">{{ totalCount }}</span>
                         </div>
                     </div>
                 </div>
@@ -78,18 +78,18 @@
                 <div class="space-y-1.5">
                     <div v-for="(detail, index) in filteredAndSortedDetails" 
                          :key="index"
-                         class="bg-white border border-gray-200 rounded-lg px-3 py-2 hover:shadow-md transition">
+                         class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 hover:shadow-md transition">
                         <!-- 上半部 -->
                         <div class="flex justify-between items-start">
                             <!-- 左上：位置 -->
-                            <div class="flex-1 font-semibold text-gray-800">
+                            <div class="flex-1 font-semibold text-gray-800 dark:text-gray-200">
                                 {{ detail.loc }}
                             </div>
                             <!-- 右上：空櫃/總櫃 -->
                             <div class="text-right">
                                 <span :class="getEmptyClass(detail.empty, detail.total)" class="text-lg font-bold">{{ detail.empty }}</span>
-                                <span class="text-gray-400 mx-1">/</span>
-                                <span class="text-gray-600 font-semibold">{{ detail.total ?? '-' }}</span>
+                                <span class="text-gray-400 dark:text-gray-500 mx-1">/</span>
+                                <span class="text-gray-600 dark:text-gray-400 font-semibold">{{ detail.total ?? '-' }}</span>
                             </div>
                         </div>
                         
@@ -100,11 +100,11 @@
                                 <span class="px-2 py-0.5 rounded font-semibold text-sm" :class="getSizeBadgeClass(detail.size)">
                                     {{ detail.size }}
                                 </span>
-                                <span class="text-sm text-gray-600">{{ detail.price }}</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ detail.price }}</span>
                             </div>
                             <!-- 右下：櫃號 -->
                             <div v-if="detail.id != 0">
-                                <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-semibold">
+                                <span class="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded text-xs font-semibold">
                                     第 {{ detail.id }} 櫃
                                 </span>
                             </div>

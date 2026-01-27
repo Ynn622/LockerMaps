@@ -1,21 +1,21 @@
 <template>
     <div v-if="isLoading" 
          ref="overlayRef" 
-         class="fixed inset-0 bg-white/70 backdrop-blur-xl flex items-center justify-center z-[9999]">
+         class="fixed inset-0 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl flex items-center justify-center z-[9999]">
         <div ref="containerRef" 
              class="flex flex-col items-center gap-6">
             <!-- 旋轉圖標 -->
             <div ref="iconRef" class="relative">
-                <i class="fa-solid fa-box-archive text-5xl text-blue-600"></i>
+                <i class="fa-solid fa-box-archive text-5xl text-blue-600 dark:text-blue-400"></i>
             </div>
             
             <!-- 載入文字 -->
             <div class="flex flex-col items-center gap-2">
-                <p class="text-lg font-semibold text-gray-700">{{ text }}</p>
+                <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ text }}</p>
                 <div class="flex gap-2">
-                    <span ref="dot1" class="w-2 h-2 rounded-full bg-blue-600 opacity-50"></span>
-                    <span ref="dot2" class="w-2 h-2 rounded-full bg-blue-600 opacity-50"></span>
-                    <span ref="dot3" class="w-2 h-2 rounded-full bg-blue-600 opacity-50"></span>
+                    <span ref="dot1" class="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 opacity-50"></span>
+                    <span ref="dot2" class="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 opacity-50"></span>
+                    <span ref="dot3" class="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 opacity-50"></span>
                 </div>
             </div>
         </div>

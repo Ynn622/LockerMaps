@@ -1,12 +1,12 @@
 <template>
-    <div class="flex flex-col w-full min-h-screen bg-gray-50">
+    <div class="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
         <Nav flow="sticky"/>
         
         <div class="flex-1 w-full max-w-4xl mx-auto px-4 pt-8 md:pt-12">
             <!-- 標題區塊 -->
             <div class="text-center mb-8">
-                <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4">關於 LockerMaps</h1>
-                <p class="text-sm md:text-lg text-gray-600">台灣最便利的置物櫃速查平台</p>
+                <h1 class="text-3xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 mb-4">關於 LockerMaps</h1>
+                <p class="text-sm md:text-lg text-gray-600 dark:text-gray-400">台灣最便利的置物櫃速查平台</p>
             </div>
 
             <!-- 網頁介紹 -->
@@ -18,32 +18,11 @@
                             整合全台各地的置物櫃資訊，包括火車站、捷運站、商場等公共場所。
                         </p>
                         <div class="grid md:grid-cols-2 gap-4 mt-6">
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-map-location-dot text-green-500 text-xl mt-1"></i>
+                            <div v-for="feature in features" :key="feature.title" class="flex items-start gap-3">
+                                <i :class="['text-xl mt-1', feature.icon]"></i>
                                 <div>
-                                    <h3 class="font-semibold text-gray-800 mb-1">即時地圖定位</h3>
-                                    <p class="text-sm text-gray-600">快速找到離你最近的置物櫃位置</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-database text-purple-500 text-xl mt-1"></i>
-                                <div>
-                                    <h3 class="font-semibold text-gray-800 mb-1">完整資訊查詢</h3>
-                                    <p class="text-sm text-gray-600">提供詳細的置物櫃規格與收費資訊</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-mobile-screen-button text-orange-500 text-xl mt-1"></i>
-                                <div>
-                                    <h3 class="font-semibold text-gray-800 mb-1">響應式設計</h3>
-                                    <p class="text-sm text-gray-600">支援手機、平板、電腦多種裝置</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-bolt text-yellow-500 text-xl mt-1"></i>
-                                <div>
-                                    <h3 class="font-semibold text-gray-800 mb-1">快速載入</h3>
-                                    <p class="text-sm text-gray-600">優化效能，提供流暢使用體驗</p>
+                                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-1">{{ feature.title }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ feature.description }}</p>
                                 </div>
                             </div>
                         </div>
@@ -57,25 +36,12 @@
                             本平台的置物櫃資料來自以下開放資料來源，確保資訊的準確性與即時性：
                         </p>
                         <div class="space-y-3">
-                            <div class="flex flex-col gap-1 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r">
-                                <a href="https://www.metro.taipei/cp.aspx?n=074C9E96AEC24806"
-                                    class="font-semibold text-gray-800">台北捷運 - 置物櫃服務</a>
-                                <p class="text-sm text-gray-600">台北捷運公開寄物櫃資料</p>
-                            </div>
-                            <div
-                                class="flex flex-col gap-1 border-l-4 border-orange-500 pl-4 py-2 bg-orange-50 rounded-r">
-                                <a href="https://owlocker.com/#/querysite"
-                                 class="font-semibold text-gray-800">OWL Locker 智慧型寄物櫃</a>
-                                <p class="text-sm text-gray-600">全台最大的智慧型寄物櫃平台</p>
-                            </div>
-                            <div class="flex flex-col gap-1 border-l-4 border-gray-500 pl-4 py-2 bg-gray-50 rounded-r">
-                                <a href="https://lockerinfo.autosale.com.tw/"
-                                   class="font-semibold text-gray-800">臺鐵置物櫃資訊</a>
-                                <p class="text-sm text-gray-600">臺鐵台北10站置物櫃資料</p>
-                            </div>
-                            <div class="flex flex-col gap-1 border-l-4 border-purple-500 pl-4 py-2 bg-purple-50 rounded-r">
-                                <a class="font-semibold text-gray-800">使用者回報</a>
-                                <p class="text-sm text-gray-600">熱心使用者提供的最新置物櫃位置資訊</p>
+                            <div v-for="source in dataSources" :key="source.title"
+                                :class="['flex flex-col gap-1 border-l-4 pl-4 py-2 rounded', source.borderColor, source.bgColor]">
+                                <a :href="source.link" :class="['font-semibold', source.link ? 'text-gray-800 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400' : 'text-gray-800 dark:text-gray-100']">
+                                    {{ source.title }}
+                                </a>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ source.description }}</p>
                             </div>
                         </div>
                         <p class="text-sm text-gray-500 mt-4">
@@ -97,12 +63,12 @@
                     <!-- 回饋表單 -->
                     <form @submit.prevent="submitFeedback" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 <i class="fa-solid fa-tag mr-1"></i>回饋類型
                             </label>
                             <select 
                                 v-model="feedbackForm.type" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-gray-200"
                                 required
                             >
                                 <option value="">請選擇回饋類型</option>
@@ -114,20 +80,20 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 <i class="fa-solid fa-user mr-1"></i>暱稱
                             </label>
                             <input 
                                 v-model="feedbackForm.name" 
                                 type="text" 
                                 placeholder="請輸入您的暱稱"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 <i class="fa-solid fa-envelope mr-1"></i>Email（選填）
                             </label>
                             <input 
@@ -135,8 +101,8 @@
                                 type="email" 
                                 placeholder="請輸入您的 Email"
                                 @input="handleEmailInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                :class="emailError ? 'border-red-500' : 'border-gray-300'"
+                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                :class="emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'"
                             />
                             <p v-if="emailError" class="text-red-500 text-sm mt-1">
                                 <i class="fa-solid fa-circle-exclamation mr-1"></i>{{ emailError }}
@@ -144,7 +110,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 <i class="fa-solid fa-message mr-1"></i>意見內容
                             </label>
                             <textarea 
@@ -152,7 +118,7 @@
                                 rows="6" 
                                 minlength="5"
                                 placeholder="請詳細描述您的意見或建議..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                 required
                             ></textarea>
                         </div>
@@ -170,7 +136,7 @@
                             <button 
                                 type="button" 
                                 @click="resetForm"
-                                class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition duration-200"
+                                class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
                             >
                                 <i class="fa-solid fa-rotate-right mr-2"></i>清除
                             </button>
@@ -180,7 +146,7 @@
             </div>
 
             <!-- Footer -->
-            <footer class="text-center text-gray-500 text-sm py-8">
+            <footer class="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
                 <p>© 2026 LockerMaps. Made with <i class="fa-solid fa-heart text-red-500"></i> in Taiwan</p>
             </footer>
         </div>
@@ -206,6 +172,62 @@ gsap.registerPlugin(ScrollTrigger);
 const toastRef = ref<InstanceType<typeof Toast> | null>(null);
 const isSubmitting = ref(false);
 const emailError = ref('');
+
+// 網頁功能特色
+const features = [
+    {
+        icon: 'fa-solid fa-map-location-dot text-green-500',
+        title: '即時地圖定位',
+        description: '快速找到離你最近的置物櫃位置'
+    },
+    {
+        icon: 'fa-solid fa-database text-purple-500',
+        title: '完整資訊查詢',
+        description: '提供詳細的置物櫃規格與收費資訊'
+    },
+    {
+        icon: 'fa-solid fa-mobile-screen-button text-orange-500',
+        title: '響應式設計',
+        description: '支援手機、平板、電腦多種裝置'
+    },
+    {
+        icon: 'fa-solid fa-bolt text-yellow-500',
+        title: '快速載入',
+        description: '優化效能，提供流暢使用體驗'
+    }
+];
+
+// 資料來源
+const dataSources = [
+    {
+        title: '台北捷運 - 置物櫃服務',
+        description: '台北捷運公開寄物櫃資料',
+        link: 'https://www.metro.taipei/cp.aspx?n=074C9E96AEC24806',
+        borderColor: 'border-blue-500',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20'
+    },
+    {
+        title: 'OWL Locker 智慧型寄物櫃',
+        description: '全台最大的智慧型寄物櫃平台',
+        link: 'https://owlocker.com/#/querysite',
+        borderColor: 'border-orange-500',
+        bgColor: 'bg-orange-50 dark:bg-orange-900/20'
+    },
+    {
+        title: '臺鐵置物櫃資訊',
+        description: '臺鐵台北10站置物櫃資料',
+        link: 'https://lockerinfo.autosale.com.tw/',
+        borderColor: 'border-gray-500',
+        bgColor: 'bg-gray-50 dark:bg-gray-700/50'
+    },
+    {
+        title: '使用者回報',
+        description: '熱心使用者提供的最新置物櫃位置資訊',
+        link: '',
+        borderColor: 'border-purple-500',
+        bgColor: 'bg-purple-50 dark:bg-purple-900/20'
+    }
+];
 
 // 回饋表單資料
 const feedbackForm = reactive({

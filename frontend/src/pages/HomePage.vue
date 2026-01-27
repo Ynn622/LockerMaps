@@ -14,7 +14,7 @@
             <button
                 @click="reloadLockerData"
                 :disabled="isReloading"
-                class="absolute top-[185px] right-[8px] z-10 bg-white hover:bg-gray-100 text-gray-700 p-1.5 rounded shadow-md transition duration-200 border-gray-300/90 border-2 rounded-sm disabled:opacity-10 disabled:cursor-not-allowed"
+                class="absolute top-[185px] right-[8px] z-10 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 p-1.5 rounded shadow-md transition duration-200 border-gray-300/90 dark:border-gray-600 border-2 rounded-sm disabled:opacity-10 disabled:cursor-not-allowed"
                 title="重新載入置物櫃資料中"
             >
                 <i :class="['fa-solid fa-rotate-right text-sm', { 'animate-spin': isReloading }]"></i>

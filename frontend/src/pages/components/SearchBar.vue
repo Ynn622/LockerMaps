@@ -7,7 +7,7 @@
                 @focus="handleFocus"
                 type="text"
                 placeholder="搜尋站點名稱..."
-                class="w-full px-3 py-2 md:py-2.5 pr-10 bg-white border-2 border-gray-300/90 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-base"
+                class="w-full px-3 py-2 md:py-2.5 pr-10 bg-white dark:bg-gray-800 dark:text-gray-100 border-2 border-gray-300/90 dark:border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-base placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
             
@@ -24,19 +24,19 @@
         <!-- 搜尋結果下拉列表 -->
         <div
             v-if="showResults && searchQuery && filteredStations.length > 0"
-            class="absolute top-full mt-1 w-full bg-white border-2 border-gray-300/90 rounded shadow-lg max-h-[35dvh] overflow-y-auto"
+            class="absolute top-full mt-1 w-full bg-white dark:bg-gray-800 border-2 border-gray-300/90 dark:border-gray-600 rounded shadow-lg max-h-[35dvh] overflow-y-auto"
         >
             <div
                 v-for="station in filteredStations"
                 :key="station.station"
                 @click="selectStation(station)"
-                class="px-3 md:px-4 py-2.5 md:py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 transition"
+                class="px-3 md:px-4 py-2.5 md:py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition"
             >
                 <div class="flex items-start gap-2">
-                    <i class="fa-solid fa-location-dot mt-1"></i>
+                    <i class="fa-solid fa-location-dot mt-1 dark:text-gray-300"></i>
                     <div class="flex-1">
                         <div class="flex items-start justify-between gap-2">
-                            <div class="font-semibold text-gray-800 text-sm">{{ station.station }}</div>
+                            <div class="font-semibold text-gray-800 dark:text-gray-100 text-sm">{{ station.station }}</div>
                             <span class="text-xs px-2 py-0.5 rounded bg-gradient-to-r text-white flex-shrink-0" :class="getTypeDisplayClass(station.type)">{{station.type }}</span>
                         </div>
                         <div class="flex gap-2 mt-1" v-if="station.tag && station.tag.length > 0">
@@ -53,7 +53,7 @@
         <!-- 無結果提示 -->
         <div
             v-if="showResults && searchQuery && filteredStations.length === 0"
-            class="absolute top-full mt-1 w-full bg-white border-2 border-gray-300/90 rounded shadow-lg px-4 py-3 text-sm text-gray-500 text-center"
+            class="absolute top-full mt-1 w-full bg-white dark:bg-gray-800 border-2 border-gray-300/90 dark:border-gray-600 rounded shadow-lg px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center"
         >
             <i class="fa-solid fa-circle-exclamation mr-1"></i>
             找不到符合的站點
