@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import time
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from services.locker import *
 from util.logger import log_print, Log, Color
@@ -29,12 +30,25 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
             with cache_lock:  # 使用鎖保護
                 # 雙重檢查：進入鎖後再次確認是否需要更新
                 if now - last_fetch_time > CACHE_TTL or not cache_data:
-                    cache_data = {
-                        "MRT": getMRTLockerData(),
-                        "TRA": getTRALockerData(),
-                        "OWL": getOWLockerData(),
-                        "Arena": getArenaLockerData()
-                    }
+                    # 並行執行所有爬蟲
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        futures = {
+                            executor.submit(getMRTLockerData): "MRT",
+                            executor.submit(getTRALockerData): "TRA",
+                            executor.submit(getOWLockerData): "OWL",
+                            executor.submit(getArenaLockerData): "Arena"
+                        }
+                        
+                        temp_cache = {}
+                        for future in as_completed(futures):
+                            key = futures[future]
+                            try:
+                                temp_cache[key] = future.result()
+                            except Exception as e:
+                                Log(f"爬取 {key} 失敗: {e}", color=Color.RED)
+                                temp_cache[key] = []
+                        
+                        cache_data = temp_cache
                     last_fetch_time = time.time()  # 使用最新時間
 
         # 根據參數篩選
