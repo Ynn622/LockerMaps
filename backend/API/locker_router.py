@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 import time
+import threading
 
 from services.locker import *
 from util.logger import log_print, Log, Color
@@ -14,6 +15,7 @@ router = APIRouter(tags=["LockerMaps Data"])
 cache_data = {}
 last_fetch_time = 0
 CACHE_TTL = 30  # 單位：秒
+cache_lock = threading.Lock()  # 防止 race condition
 
 @router.get("/Locker")
 @log_print
@@ -24,12 +26,15 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
         
         # 超過 TTL 才重新爬
         if now - last_fetch_time > CACHE_TTL or not cache_data:
-            cache_data = {
-                "MRT": getMRTLockerData(),
-                "TRA": getTRALockerData(),
-                "OWL": getOWLockerData(),
-            }
-            last_fetch_time = now
+            with cache_lock:  # 使用鎖保護
+                # 雙重檢查：進入鎖後再次確認是否需要更新
+                if now - last_fetch_time > CACHE_TTL or not cache_data:
+                    cache_data = {
+                        "MRT": getMRTLockerData(),
+                        "TRA": getTRALockerData(),
+                        "OWL": getOWLockerData(),
+                    }
+                    last_fetch_time = time.time()  # 使用最新時間
 
         # 根據參數篩選
         if type in cache_data:
