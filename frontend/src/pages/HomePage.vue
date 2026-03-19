@@ -1,29 +1,23 @@
 <template>
     <div class="flex flex-col w-full h-[100dvh]">
-        <Nav flow="absolute"/>
+        <Nav flow="absolute" />
 
         <!-- Mapbox 地圖容器 -->
         <div ref="mapContainer" class="flex-1 w-full h-full relative">
             <!-- 搜尋列 -->
-            <SearchBar 
-                :stations="lockerStations" 
-                @select="handleStationSelect"
-            />
-            
+            <SearchBar :stations="lockerStations" @select="handleStationSelect" />
+
             <!-- 重新載入按鈕 -->
-            <button
-                @click="reloadLockerData"
-                :disabled="isReloading"
+            <button @click="reloadLockerData" :disabled="isReloading"
                 class="absolute top-[185px] right-[8px] z-10 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 p-1.5 rounded shadow-md transition duration-200 border-gray-300/90 dark:border-gray-600 border-2 rounded-sm disabled:opacity-10 disabled:cursor-not-allowed"
-                title="重新載入置物櫃資料中"
-            >
+                title="重新載入置物櫃資料中">
                 <i :class="['fa-solid fa-rotate-right text-sm', { 'animate-spin': isReloading }]"></i>
             </button>
         </div>
 
         <!-- 詳細資訊面板 -->
         <DetailPanel ref="detailPanel" />
-        
+
         <!-- 載入畫面 -->
         <Loading ref="loadingRef" />
     </div>
@@ -53,6 +47,34 @@ const markers: any = ref([]);
 const lockerStations = ref<StationData[]>([]);
 const isReloading = ref(false);
 
+// 每個 marker 的尺寸更新函式集合
+type MarkerUpdateFn = (size: number) => void;
+const markerUpdateFns: MarkerUpdateFn[] = [];
+
+/**
+ * 根據 zoom level 線性插值出 marker 大小（px）
+ * zoom 5 以下 → 12px，zoom 16 以上 → 30px
+ */
+const getMarkerSize = (zoom: number): number => {
+    const minZoom = 5, maxZoom = 16;
+    const minSize = 12, maxSize = 30;
+    const t = Math.min(1, Math.max(0, (zoom - minZoom) / (maxZoom - minZoom)));
+    return Math.round(minSize + t * (maxSize - minSize));
+};
+
+// 更新所有 marker 尺寸（用 rAF 節流，避免 zoom 事件打太頻繁）
+let rafPending = false;
+const updateMarkerSizes = () => {
+    if (!map || rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+        rafPending = false;
+        if (!map) return;
+        const size = getMarkerSize(map.getZoom());
+        markerUpdateFns.forEach(fn => fn(size));
+    });
+};
+
 // 響應式斷點偵測
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smaller('md'); // < md
@@ -69,7 +91,7 @@ const loadLockerData = async () => {
         lockerStations.value = data;
         logger.func.success('loadLockerData', []);
         logger.info('載入置物櫃資料成功，共', data.length, '個站點');
-        
+
         // 添加標記點到地圖
         addMarkersToMap();
     } catch (error) {
@@ -81,61 +103,129 @@ const loadLockerData = async () => {
     }
 };
 
+/**
+ * 依站點類型返回對應的 FontAwesome icon class
+ */
+const getMarkerIcon = (type: string): string => {
+    switch (type) {
+        case 'MRT': return 'fa-solid fa-train-subway';
+        case 'TRA': return 'fa-solid fa-train';
+        case 'OWL': return 'fa-solid fa-box-archive';
+        default: return 'fa-solid fa-location-dot';
+    }
+};
+
 // 添加標記點到地圖
 const addMarkersToMap = () => {
     if (!map) return;
-    
+
     // 清除舊標記
     markers.value.forEach((marker: mapboxgl.Marker) => marker.remove());
     markers.value = [];
-    
+
+    // 清空舊的尺寸更新函式
+    markerUpdateFns.length = 0;
+
     // 添加新標記
     lockerStations.value.forEach(station => {
         if (!station.lat || !station.lng) return;
-        
-        // 創建標記（使用預設樣式，依類型設定顏色）
-        const marker = new mapboxgl.Marker({ 
-            color: getMarkerColor(station.type)
-        })
+
+        const color = getMarkerColor(station.type);
+        const icon = getMarkerIcon(station.type);
+
+        // 外層容器 - 只給 Mapbox 用於定位，不加 transition（否則地圖拖動時 transform 會慢半拍飄移）
+        const el = document.createElement('div');
+        el.style.cssText = `
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        `;
+
+        // 內層視覺元素 - 負責外觀與 hover 動畫（scale 在此發生，不影響 Mapbox 定位）
+        const inner = document.createElement('div');
+        inner.style.cssText = `
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid ${color};
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 1.5px rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            pointer-events: none;
+        `;
+
+        // 內部 icon
+        const iconEl = document.createElement('i');
+        iconEl.className = icon;
+        iconEl.style.cssText = `
+            color: ${color};
+            font-size: 14px;
+            pointer-events: none;
+        `;
+        inner.appendChild(iconEl);
+        el.appendChild(inner);
+
+        // Hover 動畫（套在 inner 上，不影響外層的定位 transform）
+        el.addEventListener('mouseenter', () => {
+            inner.style.transform = 'scale(1.25)';
+            inner.style.boxShadow = `0 4px 16px rgba(0,0,0,0.3), 0 0 0 2px ${color}55`;
+        });
+        el.addEventListener('mouseleave', () => {
+            inner.style.transform = 'scale(1)';
+            inner.style.boxShadow = '0 2px 8px rgba(0,0,0,0.25), 0 0 0 1.5px rgba(255,255,255,0.6)';
+        });
+
+        // 建立 Mapbox Marker（使用自訂元素，anchor 設為 center）
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat([station.lng, station.lat])
             .addTo(map!);
-        
+
         // 點擊事件 - 顯示詳細資訊
-        marker.getElement().addEventListener('click', () => {
+        el.addEventListener('click', () => {
             logger.info('點擊站點:', station.station);
             detailPanel.value?.show(station);
         });
-        
-        // 添加 hover 樣式
-        marker.getElement().style.cursor = 'pointer';
-        
+
+        // 註冊尺寸更新函式（zoom 變化時呼叫）
+        markerUpdateFns.push((size: number) => {
+            el.style.width = `${size}px`;
+            el.style.height = `${size}px`;
+            iconEl.style.fontSize = `${Math.round(size * 0.45)}px`;
+        });
+
         markers.value.push(marker);
     });
-    
+
+    // 套用目前 zoom 的初始大小
+    updateMarkerSizes();
+
     logger.info('已添加', markers.value.length, '個標記點');
 };
 
 // 重新載入置物櫃資料
 const reloadLockerData = async () => {
     if (isReloading.value) return;
-    
+
     try {
         isReloading.value = true;
         logger.func.start('reloadLockerData', []);
-        
+
         // 顯示載入提示
         loadingRef.value?.show('重新載入置物櫃資料中');
-        
+
         // 重新獲取資料
         const data = await getLockerData();
         lockerStations.value = data;
-        
+
         // 重新添加標記點
         addMarkersToMap();
-        
+
         logger.func.success('reloadLockerData', []);
         logger.info('重新載入完成，共', data.length, '個站點');
-        
+
         // 顯示成功提示
         toast?.show('資料已更新！', 'success', 3000);
     } catch (error) {
@@ -151,17 +241,17 @@ const reloadLockerData = async () => {
 // 處理站點選擇（從搜尋列）
 const handleStationSelect = (station: StationData) => {
     if (!map || !station.lat || !station.lng) return;
-    
+
     logger.info('選擇站點:', station.station);
-    
+
     // 飛到選擇的站點位置
     map.flyTo({
-        center: [station.lng, station.lat-(isMobile.value ? 0.005 : 0)],
+        center: [station.lng, station.lat - (isMobile.value ? 0.005 : 0)],
         zoom: 14,
         duration: 1500,
         essential: true
     });
-    
+
     // 延遲一下再顯示詳細資訊，讓地圖飛行動畫更流暢
     setTimeout(() => {
         detailPanel.value?.show(station);
@@ -171,7 +261,7 @@ const handleStationSelect = (station: StationData) => {
 // 初始化地圖
 const initMap = () => {
     if (!mapContainer.value) return;
-    
+
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
     map = new mapboxgl.Map({
@@ -183,13 +273,13 @@ const initMap = () => {
         bearing: 0,
         interactive: true,
     });
-    
+
     // 添加導航控制器
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    
+
     // 添加全螢幕控制器
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-    
+
     // 添加定位控制器
     const geolocateControl = new mapboxgl.GeolocateControl({
         positionOptions: {
@@ -201,12 +291,12 @@ const initMap = () => {
         showAccuracyCircle: true // 顯示精度範圍圓圈
     });
     map.addControl(geolocateControl, 'top-right');
-    
+
     // 監聽定位錯誤事件
     geolocateControl.on('error', (error) => {
         logger.error('定位錯誤:', error);
         let toastMessage = '';
-        
+
         if (error.code === 1) {
             // PERMISSION_DENIED
             logger.warn('使用者拒絕了定位請求');
@@ -223,26 +313,29 @@ const initMap = () => {
             logger.warn('未知的定位錯誤:', error);
             toastMessage = '定位功能暫時無法使用，請稍後再試';
         }
-        
+
         // 顯示 Toast 提示
         toast?.show(toastMessage, 'warning', 10000);
     });
-    
+
     // 監聽定位成功事件
     geolocateControl.on('geolocate', (position) => {
         logger.info('定位成功:', position.coords.latitude, position.coords.longitude);
     });
-    
+
     // 添加比例尺
     map.addControl(new mapboxgl.ScaleControl({
         maxWidth: 100,
         unit: 'metric'
     }), 'bottom-left');
-    
+
+    // 監聽 zoom 事件，動態縮放 marker 大小
+    map.on('zoom', updateMarkerSizes);
+
     // 地圖載入完成事件
     map.on('load', () => {
         logger.info('地圖載入完成');
-        
+
         // 設置地圖顯示語言為中文
         const layers = map?.getStyle().layers ?? []
 
@@ -259,10 +352,10 @@ const initMap = () => {
                 ['get', 'name']
             ])
         }
-        
+
         // 載入置物櫃資料
         loadLockerData();
-        
+
         // 自動觸發定位（在地圖載入後）
         // 檢查是否支援地理定位
         if ('geolocation' in navigator) {
@@ -289,7 +382,8 @@ onUnmounted(() => {
     // 清除標記
     markers.value.forEach((marker: mapboxgl.Marker) => marker.remove());
     markers.value = [];
-    
+    markerUpdateFns.length = 0;
+
     map?.remove();
     map = null;
 });
