@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'frontend/**'  # 只在 frontend 資料夾有變更時觸發
+      - '!frontend/README.md'
+      - '!README.md'
   workflow_dispatch:  # 允許手動觸發
 
 jobs:

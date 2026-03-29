@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'backend/**'  # 只在 backend 資料夾有變更時觸發
+      - '!backend/README.md'
+      - '!backend/README_HF.md'
+      - '!README.md'
 
 jobs:
   deploy-backend:
