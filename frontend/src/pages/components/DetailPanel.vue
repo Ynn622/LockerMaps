@@ -309,7 +309,7 @@ defineExpose({
 
 .detail-panel.desktop {
     left: 0;
-    top: 60px;
+    top: 64px;
     bottom: 0;
     width: 420px;
     border-radius: 0 0.5rem 0.5rem 0;
@@ -324,6 +324,5 @@ defineExpose({
     height: 45vh;
     border-radius: 1rem 1rem 0 0;
     width: 100dvw;
-    border-right: 1px solid #e5e7eb;
 }
 </style>

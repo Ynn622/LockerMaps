@@ -20,7 +20,7 @@
         </div>
     </div>
     <!-- 手機版選單下拉 -->
-    <div id="mobileMenu" class="flex flex-col md:hidden top-16 px-4 py-3 gap-5 h-0 bg-white dark:bg-gray-800 shadow-md w-full text-sm font-bold opacity-0 overflow-hidden items-start"
+    <div id="mobileMenu" class="flex flex-col md:hidden top-15.5 px-4 py-3 gap-5 h-0 bg-white dark:bg-gray-800 shadow-md w-full text-sm font-bold opacity-0 overflow-hidden items-start"
         :class="[isMenuOpen ? 'z-40' : 'z-0', flow]">
         <button @click="shared()" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">推薦朋友</button>
         <router-link to="/about" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">關於我們</router-link>
