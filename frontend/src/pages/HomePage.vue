@@ -9,10 +9,22 @@
 
             <!-- 重新載入按鈕 -->
             <button @click="reloadLockerData" :disabled="isReloading"
-                class="absolute top-[185px] right-[8px] z-10 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 p-1.5 rounded shadow-md transition duration-200 border-gray-300/90 dark:border-gray-600 border-2 rounded-sm disabled:opacity-10 disabled:cursor-not-allowed"
+                class="absolute md:bottom-[24px] bottom-[10px] right-[8px] z-10 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 p-1.5 rounded shadow-md transition duration-200 border-gray-300/90 dark:border-gray-600 border-2 rounded-sm disabled:opacity-10 disabled:cursor-not-allowed"
                 title="重新載入置物櫃資料中">
                 <i :class="['fa-solid fa-rotate-right text-sm', { 'animate-spin': isReloading }]"></i>
             </button>
+
+            <!-- 資料更新時間 -->
+            <div v-if="lastUpdateTime" 
+                @click="showTooltip = !showTooltip"
+                class="absolute md:bottom-[24px] bottom-[10px] right-[48px] z-10 bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-400 px-2 py-1 rounded shadow-sm text-xs backdrop-blur-sm cursor-pointer active:scale-95 transition-transform">
+                資料更新時間：{{ lastUpdateTime }}
+                <!-- Tooltip -->
+                <div v-show="showTooltip" class="absolute bottom-full right-0 mb-2 w-max max-w-[200px] bg-gray-800 dark:bg-gray-700 text-white text-xs px-3 py-2 rounded shadow-lg pointer-events-none">
+                    資料每30秒更新一次，請手動點擊右方 <i class="fa-solid fa-rotate-right"></i> 更新資料！
+                    <div class="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-800 dark:border-t-gray-700"></div>
+                </div>
+            </div>
         </div>
 
         <!-- 詳細資訊面板 -->
@@ -46,6 +58,8 @@ let map: mapboxgl.Map | null = null;
 const markers: any = ref([]);
 const lockerStations = ref<StationData[]>([]);
 const isReloading = ref(false);
+const lastUpdateTime = ref<string>('');
+const showTooltip = ref(false);
 
 // 每個 marker 的尺寸更新函式集合
 type MarkerUpdateFn = (size: number) => void;
@@ -89,6 +103,11 @@ const loadLockerData = async () => {
         logger.func.start('loadLockerData', []);
         const data = await getLockerData();
         lockerStations.value = data;
+        
+        // 更新資料載入時間
+        const now = new Date();
+        lastUpdateTime.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
         logger.func.success('loadLockerData', []);
         logger.info('載入置物櫃資料成功，共', data.length, '個站點');
 
@@ -219,6 +238,10 @@ const reloadLockerData = async () => {
         // 重新獲取資料
         const data = await getLockerData();
         lockerStations.value = data;
+        
+        // 更新資料載入時間
+        const now = new Date();
+        lastUpdateTime.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         // 重新添加標記點
         addMarkersToMap();
