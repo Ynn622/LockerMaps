@@ -6,10 +6,24 @@
   <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white" alt="TailwindCSS">
 </p>
 
-<p align="center">
-  <strong>台灣置物櫃速查！</strong><br>
-  <em>捷運、台鐵、百貨！</em>
-</p>
+---
+
+
+### 啟動前端 (Frontend)
+
+```bash
+cd frontend
+
+# 安裝相依套件
+npm install
+
+# 啟動開發用伺服器
+npm run dev
+
+# 啟動開發用伺服器 (區域訪問)
+npm run dev -- --host
+```
+啟動後，請瀏覽 `http://localhost:5173`。
 
 ---
 
@@ -21,5 +35,5 @@
 ---
 
 <p align="center">
-  <sub>© 2025 LockerMaps. All rights reserved.</sub>
+  <sub>© 2026 LockerMaps. All rights reserved.</sub>
 </p>
