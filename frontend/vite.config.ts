@@ -3,10 +3,38 @@ import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite';
 
+const now = new Date();
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const APP_VERSION = `${now.getUTCFullYear()}.${pad2(now.getUTCMonth() + 1)}.${pad2(now.getUTCDate())}-${Math.floor(now.getTime() / 1000)}`;
+const BUILD_TIME = now.toISOString();
+
 // https://vite.dev/config/
 export default defineConfig({
   base: '/',
-  plugins: [vue(), tailwindcss()],
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(APP_VERSION)
+  },
+  plugins: [
+    vue(),
+    tailwindcss(),
+    {
+      name: 'emit-version-json',
+      generateBundle() {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'version.json',
+          source: JSON.stringify(
+            {
+              version: APP_VERSION,
+              buildTime: BUILD_TIME
+            },
+            null,
+            2
+          )
+        });
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -34,5 +62,5 @@ export default defineConfig({
   // 優化依賴預構建
   optimizeDeps: {
     include: ['vue', 'vue-router', 'mapbox-gl', '@vueuse/core', 'gsap']
-  }
+  },
 })
