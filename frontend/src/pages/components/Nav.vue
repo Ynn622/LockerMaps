@@ -2,8 +2,7 @@
     <!-- 頂部標題列 Nav -->
     <div class="sticky top-0 z-1000 bg-gray-100 dark:bg-gray-900 shadow-md flex items-center justify-between px-2.5 md:px-4 py-2.5">
         <a href="/" class="flex items-center gap-2">
-            <img src="../../assets/logo.png" class="h-10 aspect-square dark:hidden" alt="LockerMaps Logo">
-            <img src="../../assets/logo_dark.png" class="h-10 aspect-square hidden dark:block" alt="LockerMaps Logo">
+            <img src="../../assets/logo.png" class="h-10 aspect-square rounded-sm" alt="LockerMaps Logo">
             <span class="flex flex-col">
                 <span class="text-xl text-gray-800 dark:text-gray-100 font-bold">LockerMaps</span>
                 <p class="text-xs text-gray-600 dark:text-gray-400">台灣置物櫃速查</p>
