@@ -65,6 +65,57 @@ const showTooltip = ref(false);
 type MarkerUpdateFn = (size: number) => void;
 const markerUpdateFns: MarkerUpdateFn[] = [];
 
+const GEOJSON_OVERLAYS = [
+    {
+        key: 'bl',
+        url: '/mapData/metro_bl_line_car_route.geojson',
+        lineColor: '#0070bd',
+        lineWidth: 3,
+    },
+    {
+        key: 'br',
+        url: '/mapData/metro_br_line_car_route.geojson',
+        lineColor: '#c48c31',
+        lineWidth: 3,
+    },
+    {
+        key: 'g',
+        url: '/mapData/metro_g_line_car_route.geojson',
+        lineColor: '#008659',
+        lineWidth: 3,
+    },
+    {
+        key: 'g2',
+        url: '/mapData/metro_g_line_car_route_2.geojson',
+        lineColor: '#33a97a',
+        lineWidth: 2,
+    },
+    {
+        key: 'o',
+        url: '/mapData/metro_o_line_car_route.geojson',
+        lineColor: '#f8b61c',
+        lineWidth: 3,
+    },
+    {
+        key: 'o2',
+        url: '/mapData/metro_o_line_car_route_2.geojson',
+        lineColor: '#f8b61c',
+        lineWidth: 3,
+    },
+    {
+        key: 'r',
+        url: '/mapData/metro_r_line_car_route.geojson',
+        lineColor: '#cb2c30',
+        lineWidth: 3,
+    },
+    {
+        key: 'r2',
+        url: '/mapData/metro_r_line_car_route_2.geojson',
+        lineColor: '#dc6e71',
+        lineWidth: 2,
+    }
+] as const;
+
 /**
  * 根據 zoom level 線性插值出 marker 大小（px）
  * zoom 5 以下 → 12px，zoom 16 以上 → 30px
@@ -281,6 +332,49 @@ const handleStationSelect = (station: StationData) => {
     }, 800);
 };
 
+const addGeoJsonOverlays = async () => {
+    if (!map) return;
+
+    for (const overlay of GEOJSON_OVERLAYS) {
+        const sourceId = `geojson-source-${overlay.key}`;
+        const lineLayerId = `geojson-line-${overlay.key}`;
+
+        try {
+            const response = await fetch(overlay.url);
+            if (!response.ok) {
+                logger.warn(`GeoJSON 載入失敗 (${overlay.url}):`, response.status);
+                continue;
+            }
+
+            const data = await response.json();
+
+            if (!map.getSource(sourceId)) {
+                map.addSource(sourceId, {
+                    type: 'geojson',
+                    data,
+                });
+            }
+
+            if (!map.getLayer(lineLayerId)) {
+                map.addLayer({
+                    id: lineLayerId,
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': overlay.lineColor,
+                        'line-width': overlay.lineWidth,
+                        'line-opacity': 0.9,
+                    },
+                });
+            }
+
+            logger.info(`GeoJSON 疊圖完成: ${overlay.url}`);
+        } catch (error) {
+            logger.error(`GeoJSON 疊圖失敗 (${overlay.url}):`, error);
+        }
+    }
+};
+
 // 初始化地圖
 const initMap = () => {
     if (!mapContainer.value) return;
@@ -375,6 +469,9 @@ const initMap = () => {
                 ['get', 'name']
             ])
         }
+
+        // 載入 public/mapData 下的 GeoJSON 疊圖
+        addGeoJsonOverlays();
 
         // 載入置物櫃資料
         loadLockerData();
