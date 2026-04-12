@@ -31,12 +31,13 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
                 # 雙重檢查：進入鎖後再次確認是否需要更新
                 if now - last_fetch_time > CACHE_TTL or not cache_data:
                     # 並行執行所有爬蟲
-                    with ThreadPoolExecutor(max_workers=4) as executor:
+                    with ThreadPoolExecutor(max_workers=5) as executor:
                         futures = {
                             executor.submit(getMRTLockerData): "MRT",
                             executor.submit(getTRALockerData): "TRA",
                             executor.submit(getOWLockerData): "OWL",
-                            executor.submit(getArenaLockerData): "Arena"
+                            executor.submit(getArenaLockerData): "Arena",
+                            executor.submit(getTcapLockerData): "Tcap"
                         }
                         
                         temp_cache = {}

@@ -186,6 +186,60 @@ def getArenaLockerData():
     
     return result
 
+def getTcapLockerData():
+    """
+    爬取 兒童新樂園 置物櫃資料
+    並轉成 JSON 格式。
+    """
+    url = "https://web.metro.taipei/apis/metrostationapi/lockersinfoforrb"
+    body = {"Field": "tcap", "Lang": "TW"}
+    web_json = requests.post(url, json=body).json()
+    
+    details = []
+    for location in web_json:
+        loc = location["PositionTW"]
+        for closet in location["ClosetInfoList"]:
+            # 計算價格
+            hour_fee = int(closet["HourFee"])
+            day_fee = int(closet["DayFee"])
+            one_time_fee = int(closet["OneTimeFee"])
+            
+            if one_time_fee > 0:
+                price = f"{one_time_fee}元/次"
+            elif day_fee > 0:
+                price = f"{day_fee}元/日"
+            elif hour_fee > 0:
+                price = f"{hour_fee}元/小時"
+            else:
+                price = "Unknown"
+            
+            # 尺寸映射：T4是大型，T3是中型，其他小型
+            size_code = closet["Size"]
+            if size_code == "T4":
+                size = "L"  # 大型
+            elif size_code == "T3":
+                size = "M"  # 中型
+            else:
+                size = "S"  # 小型 (T1, T2 等)
+            
+            details.append({
+                "loc": loc + " " + closet["SizeDescriptionTW"],
+                "id": int(closet["ClosetID"]),
+                "price": price,
+                "size": size,
+                "total": int(closet["Total"]),
+                "empty": int(closet["Amount"])
+            })
+    
+    result = [{
+        "station": "兒童新樂園",
+        "type": "MRT",
+        "tag": ["兒童新樂園內"],
+        "details": details
+    }]
+    
+    return result
+
 def merge_station_details(data):
     """
     將具有相同 'station' 名稱的 entries 合併，
@@ -222,3 +276,5 @@ if __name__ == "__main__":
         f.write(json.dumps(getOWLockerData(), ensure_ascii=False, indent=2))
     with open("ArenaLocker.json", "w", encoding="utf-8") as f:
         f.write(json.dumps(getArenaLockerData(), ensure_ascii=False, indent=2))
+    with open("TcapLocker.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(getTcapLockerData(), ensure_ascii=False, indent=2))
