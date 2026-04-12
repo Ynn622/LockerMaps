@@ -6,6 +6,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from services.locker import *
+from services.api_usage import api_usage_counter
 from util.logger import log_print, Log, Color
 from util.config import StationGPSManager
 from util.nowtime import TaiwanTime
@@ -23,6 +24,7 @@ cache_lock = threading.Lock()  # 防止 race condition
 def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, OWL")):
     global cache_data, last_fetch_time
     try:
+        api_usage_counter.increment()
         now = time.time()
         
         # 超過 TTL 才重新爬
