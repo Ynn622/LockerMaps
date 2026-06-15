@@ -16,36 +16,46 @@ def getMRTLockerData():
     url = "https://opendata.vip/metro/locker/station"
     web = requests.get(url)
     bs_web = bs(web.text, "html.parser")
-    table = bs_web.find("table", class_="myDataTable").find("tbody").find_all("tr")
+    table = bs_web.find_all("div", class_="lk-card lk-avail")
 
     lis = []
-    for tr in table[1:]:
-        rowData = [s.text.replace(" ","").replace("\n","").replace("尚有空間","").replace("已滿","").replace("(BR12)","") for s in tr.find_all("td")]
-        station, loc, price = rowData[:3]
-        price = "20元/小時" if price == "-" else price
-        size = "S" if ("10元" in rowData[2]) else "L"
-        empty, total = rowData[3].split("/")
-        lis.append({
-            "station": station,
-            "type": "MRT",
-            "loc": loc.replace("近", ""),
-            "id": 0,
-            "price": price,
-            "size": size,
-            "empty": int(empty),
-            "total": int(total),
-        })
+    for card in table:
+      data = {
+          "name": card.get("data-name").replace("(BR12)",""),
+          "line": card.get("data-line"),
+          "desc": card.get("data-desc"),
+          "available": int(card.get("data-avail")),
+          "total": int(card.get("data-total")),
+          "status": card.select_one(".lk-card-badge").get_text(strip=True),
+          "display_name": card.select_one(".lk-card-name").get_text(strip=True),
+          "availability_text": card.select_one(".lk-card-avail").get_text(" ", strip=True),
+          "percentage": float(card.select_one(".lk-bar-fill").get("data-pct")),
+          "meta": [
+              tag.get_text(strip=True)
+              for tag in card.select(".lk-card-meta .lk-meta-tag")
+          ],
+      }
+      lis.append({
+          "station": data["name"],
+          "type": "MRT",
+          "loc": data["desc"],
+          "id": 0,
+          "price": data["meta"][-1].replace("💰 ","") if data["meta"][-1].startswith("💰") else "20元/小時",
+          "size": "S" if ("10元" in data["meta"][-1]) else "L",
+          "empty": data["available"],
+          "total": data["total"],
+      })
     df = pd.DataFrame(lis)
 
     # 分組整理
-    result_json = df.groupby(["station", "type"], group_keys=False).apply(
-        lambda g: {
-            "station": g.name[0],
-            "type": g.name[1],
-            "tag": MRT_Mapping.get(g.name[0], []),
-            "details": g.to_dict(orient="records")
-        }, include_groups=False
-    ).tolist()
+    result_json = []
+    for (station, locker_type), g in df.groupby(["station", "type"]):
+        result_json.append({
+            "station": station,
+            "type": locker_type,
+            "tag": MRT_Mapping.get(station, []),
+            "details": g.drop(columns=["station", "type"]).to_dict(orient="records")
+        })
 
     return result_json
 
