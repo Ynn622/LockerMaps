@@ -41,6 +41,8 @@ origins = [
     "https://ynn622.github.io",
     "https://huggingface.co",
     "https://*.hf.space",
+    "https://lockermaps.onrender.com",
+    "https://lockermaps.net",
 ]
 if Env.RELOAD: origins = ["*"]
 

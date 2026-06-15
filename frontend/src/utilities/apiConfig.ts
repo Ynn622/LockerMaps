@@ -8,7 +8,7 @@ const PROD = true;
 // 獲取 API 基礎 URL
 export const getApiBaseUrl = () => {
     if (PROD) {
-        return `https://ynn22-lockermaps-backend.hf.space`;
+        return `https://lockermaps.onrender.com`;
     }
     return `http://localhost:7860`;
 };
