@@ -49,6 +49,8 @@ import Loading from './components/Loading.vue';
 import SearchBar from './components/SearchBar.vue';
 import Nav from './components/Nav.vue';
 import { useToast } from '@/composables/useToast';
+import mrtLogo from '@/assets/brandLogo/MRT.png';
+import traLogo from '@/assets/brandLogo/TRA.png';
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 const detailPanel = ref<InstanceType<typeof DetailPanel> | null>(null);
@@ -228,13 +230,41 @@ const addMarkersToMap = () => {
         `;
 
         // 內部 icon
-        const iconEl = document.createElement('i');
-        iconEl.className = icon;
-        iconEl.style.cssText = `
-            color: ${color};
-            font-size: 14px;
-            pointer-events: none;
-        `;
+        const logoSrc = station.type === 'MRT'
+            ? mrtLogo
+            : station.type === 'TRA'
+                ? traLogo
+                : '';
+        const logoAlt = station.type === 'MRT'
+            ? '捷運'
+            : station.type === 'TRA'
+                ? '臺鐵'
+                : '';
+        const hasLogo = Boolean(logoSrc);
+
+        const iconEl = hasLogo
+            ? document.createElement('img')
+            : document.createElement('i');
+
+        if (hasLogo) {
+            const imageEl = iconEl as HTMLImageElement;
+            imageEl.src = logoSrc;
+            imageEl.alt = logoAlt;
+            imageEl.style.cssText = `
+                width: ${station.type === 'MRT' ? '19px' : '16px'};
+                height: ${station.type === 'MRT' ? '10px' : '16px'};
+                object-fit: contain;
+                pointer-events: none;
+            `;
+        } else {
+            iconEl.className = icon;
+            iconEl.style.cssText = `
+                color: ${color};
+                font-size: 14px;
+                pointer-events: none;
+            `;
+        }
+
         inner.appendChild(iconEl);
         el.appendChild(inner);
 
@@ -263,7 +293,12 @@ const addMarkersToMap = () => {
         markerUpdateFns.push((size: number) => {
             el.style.width = `${size}px`;
             el.style.height = `${size}px`;
-            iconEl.style.fontSize = `${Math.round(size * 0.45)}px`;
+            if (hasLogo) {
+                iconEl.style.width = `${Math.round(size * (station.type === 'MRT' ? 0.72 : 0.62))}px`;
+                iconEl.style.height = `${Math.round(size * (station.type === 'MRT' ? 0.36 : 0.62))}px`;
+            } else {
+                iconEl.style.fontSize = `${Math.round(size * 0.45)}px`;
+            }
         });
 
         markers.value.push(marker);
