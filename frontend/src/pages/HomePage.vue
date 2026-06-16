@@ -50,6 +50,7 @@ import SearchBar from './components/SearchBar.vue';
 import Nav from './components/Nav.vue';
 import { useToast } from '@/composables/useToast';
 import mrtLogo from '@/assets/brandLogo/MRT.png';
+import krtcLogo from '@/assets/brandLogo/KRTC.png';
 import traLogo from '@/assets/brandLogo/TRA.png';
 
 const mapContainer = ref<HTMLDivElement | null>(null);
@@ -181,6 +182,7 @@ const loadLockerData = async () => {
 const getMarkerIcon = (type: string): string => {
     switch (type) {
         case 'MRT': return 'fa-solid fa-train-subway';
+        case 'KRTC': return 'fa-solid fa-train-subway';
         case 'TRA': return 'fa-solid fa-train';
         case 'OWL': return 'fa-solid fa-box-archive';
         default: return 'fa-solid fa-location-dot';
@@ -232,14 +234,18 @@ const addMarkersToMap = () => {
         // 內部 icon
         const logoSrc = station.type === 'MRT'
             ? mrtLogo
-            : station.type === 'TRA'
-                ? traLogo
-                : '';
+            : station.type === 'KRTC'
+                ? krtcLogo
+                : station.type === 'TRA'
+                    ? traLogo
+                    : '';
         const logoAlt = station.type === 'MRT'
             ? '捷運'
-            : station.type === 'TRA'
-                ? '臺鐵'
-                : '';
+            : station.type === 'KRTC'
+                ? '高捷'
+                : station.type === 'TRA'
+                    ? '臺鐵'
+                    : '';
         const hasLogo = Boolean(logoSrc);
 
         const iconEl = hasLogo
@@ -250,9 +256,11 @@ const addMarkersToMap = () => {
             const imageEl = iconEl as HTMLImageElement;
             imageEl.src = logoSrc;
             imageEl.alt = logoAlt;
+            const logoWidth = station.type === 'MRT' ? '19px' : station.type === 'KRTC' ? '18px' : '16px';
+            const logoHeight = station.type === 'MRT' ? '10px' : station.type === 'KRTC' ? '18px' : '16px';
             imageEl.style.cssText = `
-                width: ${station.type === 'MRT' ? '19px' : '16px'};
-                height: ${station.type === 'MRT' ? '10px' : '16px'};
+                width: ${logoWidth};
+                height: ${logoHeight};
                 object-fit: contain;
                 pointer-events: none;
             `;
@@ -294,8 +302,8 @@ const addMarkersToMap = () => {
             el.style.width = `${size}px`;
             el.style.height = `${size}px`;
             if (hasLogo) {
-                iconEl.style.width = `${Math.round(size * (station.type === 'MRT' ? 0.72 : 0.62))}px`;
-                iconEl.style.height = `${Math.round(size * (station.type === 'MRT' ? 0.36 : 0.62))}px`;
+                iconEl.style.width = `${Math.round(size * (station.type === 'MRT' ? 0.72 : station.type === 'KRTC' ? 0.62 : 0.62))}px`;
+                iconEl.style.height = `${Math.round(size * (station.type === 'MRT' ? 0.36 : station.type === 'KRTC' ? 0.62 : 0.62))}px`;
             } else {
                 iconEl.style.fontSize = `${Math.round(size * 0.45)}px`;
             }

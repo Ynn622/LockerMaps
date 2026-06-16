@@ -87,7 +87,7 @@
                             </div>
                             <!-- 右上：空櫃/總櫃 -->
                             <div class="text-right">
-                                <span :class="getEmptyClass(detail.empty, detail.total)" class="text-lg font-bold">{{ detail.empty }}</span>
+                                <span :class="getEmptyClass(detail.empty, detail.total)" class="text-lg font-bold">{{ formatEmpty(detail.empty) }}</span>
                                 <span class="text-gray-400 dark:text-gray-500 mx-1">/</span>
                                 <span class="text-gray-600 dark:text-gray-400 font-semibold">{{ detail.total ?? '-' }}</span>
                             </div>
@@ -180,9 +180,9 @@ const filteredAndSortedDetails = computed(() => {
             case 'id-desc':
                 return b.id - a.id;
             case 'empty-asc':
-                return a.empty - b.empty;
+                return compareEmpty(a.empty, b.empty, 'asc');
             case 'empty-desc':
-                return b.empty - a.empty;
+                return compareEmpty(a.empty, b.empty, 'desc');
             case 'total-asc':
                 return (a.total ?? 0) - (b.total ?? 0);
             case 'total-desc':
@@ -198,7 +198,9 @@ const filteredAndSortedDetails = computed(() => {
 // 總空櫃數
 const totalEmpty = computed(() => {
     if (!filteredAndSortedDetails.value) return 0;
-    return filteredAndSortedDetails.value.reduce((sum, d) => sum + d.empty, 0);
+    const knownDetails = filteredAndSortedDetails.value.filter(d => d.empty !== null);
+    if (knownDetails.length === 0) return '-';
+    return knownDetails.reduce((sum, d) => sum + (d.empty ?? 0), 0);
 });
 
 // 總櫃數
@@ -280,13 +282,24 @@ const getNumStatus = (empty: number, total: number) => {
 // 尺寸徽章樣式
 const getSizeBadgeClass = (size: string) => {
     if (size === 'L') return 'bg-purple-100 text-purple-700';
+    if (size === 'M') return 'bg-emerald-100 text-emerald-700';
     if (size === 'S') return 'bg-blue-100 text-blue-700';
     if (size === '手機充電') return 'bg-amber-100 text-amber-700 text-xs';
     return 'bg-gray-100 text-gray-700';
 };
 
+const compareEmpty = (a: number | null, b: number | null, direction: 'asc' | 'desc') => {
+    if (a === null && b === null) return 0;
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return direction === 'asc' ? a - b : b - a;
+};
+
+const formatEmpty = (empty: number | null) => empty ?? '-';
+
 // 空櫃數顏色
-const getEmptyClass = (empty: number, total: number | null) => {
+const getEmptyClass = (empty: number | null, total: number | null) => {
+    if (empty === null) return 'text-gray-500 dark:text-gray-400 font-semibold';
     if (empty === 0) return 'text-red-600 font-bold';
     const status = getNumStatus(empty, total ?? 0);
     if (status === 'no-data') return 'text-green-600 font-semibold';

@@ -15,9 +15,13 @@ export interface LockerDetail {
     /** 尺寸 */
     size: string;
     /** 空櫃數 */
-    empty: number;
+    empty: number | null;
     /** 總櫃數 */
     total: number | null;
+    /** 置物櫃種類 */
+    locker_kind?: string;
+    /** 原始尺寸代碼與數量 */
+    size_detail?: string;
 }
 
 /**
@@ -27,7 +31,7 @@ export interface StationData {
     /** 站點名稱 */
     station: string;
     /** 類型 */
-    type: 'MRT' | 'TRA' | 'OWL';
+    type: 'MRT' | 'TRA' | 'OWL' | 'KRTC';
     /** 標籤 */
     tag: string[];
     /** 置物櫃詳細資訊列表 */
@@ -40,7 +44,7 @@ export interface StationData {
 
 /**
  * 取得置物櫃資料
- * @param type 類型篩選 (可選): MRT, TRA, OWL
+ * @param type 類型篩選 (可選): MRT, TRA, OWL, KRTC
  */
 export async function getLockerData(type?: string): Promise<StationData[]> {
     return callAPI<StationData[]>({

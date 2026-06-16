@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 import pandas as pd
 import json
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import re
 import copy
 
@@ -276,6 +276,62 @@ def merge_station_details(data):
         merged[station]['details'].extend(entry['details'])
 
     return list(merged.values())
+
+
+def getKRTCLockerData():
+    """
+    回傳高雄捷運置物櫃資料（hardcode 版）。
+
+    高雄捷運沒有公開即時空櫃資料，因此：
+    - total：PDF 上的總櫃數
+    - empty：None（無法得知即時空櫃數量）
+    """
+    grouped = OrderedDict()
+
+    for station, locker_kind, loc, items in KRTC_LOCKERS:
+        key = (station, "KRTC")
+        grouped.setdefault(key, [])
+
+        # 依照「位置 + 收費 + 大小(S/L)」合併，保留 size_detail 讓資料不失真。
+        by_detail = defaultdict(lambda: {"total": 0, "size_codes": defaultdict(int)})
+        for size_code, count, price in items:
+            if size_code.startswith("S"):
+                size = "S"
+            elif size_code.startswith("M"):
+                size = "M"
+            else:
+                size = "L"
+            detail_key = (loc, price, size, locker_kind)
+            by_detail[detail_key]["total"] += count
+            by_detail[detail_key]["size_codes"][size_code] += count
+
+        for detail_index, ((loc, price, size, locker_kind), data) in enumerate(by_detail.items(), start=1):
+            total = data["total"]
+            grouped[key].append({
+                "loc": loc,
+                "id": detail_index,
+                "price": price,
+                "size": size,
+                "empty": None, # 無法得知即時空櫃數量
+                "total": total,
+                # 以下是高雄版額外保留的欄位；若前端沒用到，忽略即可。
+                "locker_kind": locker_kind,
+                "size_detail": ", ".join(
+                    f"{code}:{num}" for code, num in sorted(data["size_codes"].items())
+                ),
+            })
+
+    result_json = []
+    for (station, locker_type), details in grouped.items():
+        result_json.append({
+            "station": station,
+            "type": locker_type,
+            "tag": KRTC_STATION_TAGS.get(station, []) + ["無即時資料"],
+            "details": details,
+        })
+
+    return result_json
+
 
 if __name__ == "__main__":
     with open("MRTLocker.json", "w", encoding="utf-8") as f:

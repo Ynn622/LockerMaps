@@ -37,7 +37,7 @@
                     <div class="flex-1">
                         <div class="flex items-start justify-between gap-2">
                             <div class="font-semibold text-gray-800 dark:text-gray-100 text-sm">{{ station.station }}</div>
-                            <span class="text-xs px-2 py-0.5 rounded bg-gradient-to-r text-white flex-shrink-0" :class="getTypeDisplayClass(station.type)">{{station.type }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded bg-gradient-to-r text-white flex-shrink-0" :class="getTypeDisplayClass(station.type)">{{ getTypeDisplayName(station.type) }}</span>
                         </div>
                         <div class="flex gap-2 mt-1" v-if="station.tag && station.tag.length > 0">
                             <span v-for="tag in station.tag" :key="tag"
@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { StationData } from '../../utilities/lockerApi';
-import { getTagColorClass, getTypeDisplayClass } from '@/utilities/colorUtils';
+import { getTagColorClass, getTypeDisplayClass, getTypeDisplayName } from '@/utilities/colorUtils';
 
 const props = defineProps<{
     stations: StationData[];

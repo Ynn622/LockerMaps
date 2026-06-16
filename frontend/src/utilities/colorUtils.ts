@@ -6,6 +6,7 @@
 export const getMarkerColor = (type: string): string => {
     switch (type) {
         case 'MRT': return '#0088FF'; // 藍色 - 捷運
+        case 'KRTC': return '#d71920'; // 紅色 - 高捷
         case 'TRA': return '#6B7280'; // 灰色 - 台鐵
         case 'OWL': return '#e76c2fff' // 橘色 - OWL
         default: return '#6B7280';
@@ -20,6 +21,7 @@ export const getMarkerColor = (type: string): string => {
 export const getTypeDisplayClass = (type: string): string => {
     switch (type) {
         case 'MRT': return 'from-green-600 to-blue-500'; // 藍綠色漸層 - 捷運
+        case 'KRTC': return 'from-red-600 to-orange-500'; // 紅橘色漸層 - 高捷
         case 'TRA': return 'from-gray-600 to-gray-500'; // 灰色漸層 - 台鐵
         case 'OWL': return 'from-orange-600 to-orange-500'; // 橘色漸層 - OWL
         default: return 'from-gray-700 to-gray-600';
@@ -33,7 +35,8 @@ export const getTypeDisplayClass = (type: string): string => {
  */
 export const getTypeDisplayName = (type: string): string => {
     switch (type) {
-        case 'MRT': return '捷運寄物櫃';
+        case 'MRT': return '北捷寄物櫃';
+        case 'KRTC': return '高捷置物櫃';
         case 'TRA': return '台鐵寄物櫃';
         case 'OWL': return 'OWL智慧型寄物櫃';
         default: return type;
@@ -56,5 +59,6 @@ export const getTagColorClass = (tag: string): string => {
     if (tag === '台中捷運') return 'bg-green-600'; // 綠色 - 台中捷運
     if (tag === '台灣高鐵') return 'bg-orange-400'; // 橘色 - 台灣高鐵
     if (tag === '誠品生活') return 'bg-red-700'; // 棕色 - 誠品生活
+    if (tag === '無即時資料') return 'bg-slate-500'; // 無即時資料
     return 'bg-gray-400';
 };

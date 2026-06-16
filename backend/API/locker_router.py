@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from services.locker import *
 from services.api_usage import api_usage_counter
 from util.logger import log_print, Log, Color
-from util.config import StationGPSManager
+from util.config import KRTC_STATION_TAGS, StationGPSManager
 from util.nowtime import TaiwanTime
 
 router = APIRouter(tags=["LockerMaps Data"])
@@ -21,7 +21,7 @@ cache_lock = threading.Lock()  # 防止 race condition
 
 @router.get("/Locker")
 @log_print
-def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, OWL")):
+def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, OWL, KRTC")):
     global cache_data, last_fetch_time
     try:
         api_usage_counter.increment()
@@ -33,13 +33,14 @@ def get_LockerData(type: str = Query(None, description="Locker type: MRT, TRA, O
                 # 雙重檢查：進入鎖後再次確認是否需要更新
                 if now - last_fetch_time > CACHE_TTL or not cache_data:
                     # 並行執行所有爬蟲
-                    with ThreadPoolExecutor(max_workers=5) as executor:
+                    with ThreadPoolExecutor(max_workers=6) as executor:
                         futures = {
                             executor.submit(getMRTLockerData): "MRT",
                             executor.submit(getTRALockerData): "TRA",
                             executor.submit(getOWLockerData): "OWL",
                             executor.submit(getArenaLockerData): "Arena",
-                            executor.submit(getTcapLockerData): "Tcap"
+                            executor.submit(getTcapLockerData): "Tcap",
+                            executor.submit(getKRTCLockerData): "KRTC"
                         }
                         
                         temp_cache = {}
